@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HarvestPro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4fdf4;
+      margin: 0;
+      padding: 0;
+      color: #2e7d32;
+      scroll-behavior: smooth;
+    }
+
+    header, footer {
+      background: linear-gradient(135deg, #e8ffe8, #c8f7c5);
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0, 128, 0, 0.2);
+    }
+
+    section {
+      padding: 30px 10%;
+      margin: 30px auto;
+      background: white;
+      border-radius: 16px;
+      max-width: 900px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .input-group {
+      margin: 15px 0;
+      display: grid;
+    }
+
+    label {
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input, select {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: linear-gradient(to right, #2e7d32, #1b5e20);
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .button:hover {
+      background: #145a1a;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: darkgreen;
+      font-size: 1.1rem;
+    }
+
+    #shortcuts {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 30px 10%;
+      max-width: 900px;
+      margin: 30px auto;
+    }
+
+    .shortcut-card {
+      background: #ffffff;
+      flex: 1 1 250px;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 128, 0, 0.1);
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      border-left: 6px solid #2e7d32;
+    }
+
+    .shortcut-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px rgba(0, 128, 0, 0.2);
+    }
+
+    footer {
+      margin-top: 60px;
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    footer p:last-child {
+      font-size: 0.95rem;
+      color: #333;
+      margin-top: 8px;
+    }
+
+    #topBtn {
+      display: none;
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 999;
+    }
+
+    #topBtn:hover {
+      background-color: #1b5e20;
+    }
+
+    @media (max-width: 600px) {
+      section {
+        padding: 20px;
+      }
+
+      .input-group {
+        display: block;
+      }
+
+      .shortcut-card {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🌾 HarvestPro - Smart Farming Assistant</h1>
+  </header>
+
+  <section id="shortcuts">
+    <div class="shortcut-card" onclick="scrollToSection('crop')">
+      <h3>🌱 Crop Recommendation</h3>
+      <p>Find the best crop to grow based on your soil & weather data.</p>
+    </div>
+    <div class="shortcut-card" onclick="scrollToSection('fertilizer')">
+      <h3>🧪 Fertilizer Suggestion</h3>
+      <p>Get smart fertilizer advice tailored to your crop and soil.</p>
+    </div>
+    <div class="shortcut-card" onclick="scrollToSection('disease')">
+      <h3>🍂 Disease Detection</h3>
+      <p>Upload crop images to identify diseases instantly.</p>
+    </div>
+  </section>
+
+  <section id="crop">
+    <h2>🌱 Crop Recommendation</h2>
+    <form action="/crop_predict" method="POST">
+      <div class="input-group"><label>Nitrogen (mg/kg):</label><input type="text" name="nitrogen" required></div>
+      <div class="input-group"><label>Phosphorus (mg/kg):</label><input type="text" name="phosphorus" required></div>
+      <div class="input-group"><label>Potassium (mg/kg):</label><input type="text" name="potassium" required></div>
+      <div class="input-group"><label>Temperature (°C):</label><input type="text" name="temperature" required></div>
+      <div class="input-group"><label>Humidity(%):</label><input type="text" name="humidity" required></div>
+      <div class="input-group"><label>pH[0-14]:</label><input type="text" name="ph" required></div>
+      <div class="input-group"><label>Rainfall(mm):</label><input type="text" name="rainfall" required></div>
+      <button type="submit" class="button">Submit</button>
+    </form>
+
+    {% if crop_result %}
+    <div class="result" id="crop-result">
+      <strong>Top 4 Recommended Crops:</strong>
+      <ol>
+        {% for crop, score in crop_result %}
+          <li>{{ crop }} — {{ score }}%</li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endif %}
+  </section>
+
+  <section id="fertilizer">
+    <h2>🧪 Fertilizer Suggestion</h2>
+    <form action="/predict_fertilizer" method="POST">
+      <div class="input-group"><label>Crop Type:</label>
+        <select name="crop_type" required>
+          <option value="barley">Barley</option>
+          <option value="cotton">Cotton</option>
+          <option value="maize">Maize</option>
+          <option value="paddy">Paddy</option>
+          <option value="wheat">Wheat</option>
+          <option value="rice">Rice</option>
+        </select>
+      </div>
+      <div class="input-group"><label>Soil Type:</label>
+        <select name="soil_type" required>
+          <option value="sandy">Sandy</option>
+          <option value="black">Black</option>
+          <option value="red">Red</option>
+          <option value="loamy">Loamy</option>
+          <option value="clayey">Clayey</option>
+        </select>
+      </div>
+      <div class="input-group"><label>Temperature(°C):</label><input type="text" name="temperature" required></div>
+      <div class="input-group"><label>Humidity(%):</label><input type="text" name="humidity" required></div>
+      <div class="input-group"><label>Moisture(%):</label><input type="text" name="moisture" required></div>
+      <div class="input-group"><label>Nitrogen(mg/kg):</label><input type="text" name="nitrogen" required></div>
+      <div class="input-group"><label>Phosphorous(mg/kg):</label><input type="text" name="phosphorous" required></div>
+      <div class="input-group"><label>Potassium(mg/kg):</label><input type="text" name="potassium" required></div>
+      <button type="submit" class="button">Submit</button>
+    </form>
+
+    {% if fert_result and fert_result is iterable and fert_result is not string %}
+    <div class="result" id="fert-result">
+      <strong>Top 4 Fertilizer Recommendations:</strong>
+      <ol>
+        {% for fert, prob in fert_result %}
+          <li>{{ fert }} — {{ prob }}%</li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% elif fert_result %}
+    <p class="result" id="fert_result">{{ fert_result }}</p>
+    {% endif %}
+  </section>
+
+  <section id="disease">
+    <h2>🍂 Disease Detection</h2>
+    <form action="/predict_disease" method="POST" enctype="multipart/form-data">
+      <div class="input-group"><label>Crop Type:</label>
+        <select name="crop_type" required>
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+          <option value="potato">Potato</option>
+          <option value="corn">Corn</option>
+          <option value="grape">Grape</option>
+        </select>
+      </div>
+      <div class="input-group"><label>Upload Leaf Image:</label>
+        <input type="file" name="image_file" accept="image/*" required />
+      </div>
+      <button type="submit" class="button">Submit</button>
+    </form>
+
+    {% if disease_result %}
+    <p class="result" id="disease-result">Detected Disease: {{ disease_result }}</p>
+    {% endif %}
+  </section>
+
+  <footer>
+    <p>&copy; 2024 HarvestPro - Developed with ❤ for farmers</p>
+    <p>Developers — <strong>Aniket Singh</strong>, <strong>Nachiket</strong> & <strong>Rohit</strong></p>
+  </footer>
+
+  <button onclick="topFunction()" id="topBtn" title="Go to top">↑</button>
+
+  <script>
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    const topBtn = document.getElementById("topBtn");
+    window.onscroll = () => {
+      topBtn.style.display = (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) ? "block" : "none";
+    };
+
+    function topFunction() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Auto-scroll to result section after submission
+    window.onload = function () {
+      const crop = document.getElementById("crop-result");
+      const fert = document.getElementById("fert-result");
+      const disease = document.getElementById("disease-result");
+
+      if (crop) crop.scrollIntoView({ behavior: "smooth" });
+      else if (fert) fert.scrollIntoView({ behavior: "smooth" });
+      else if (disease) disease.scrollIntoView({ behavior: "smooth" });
+    };
+  </script>
+</body>
+</html>

@@ -1,2 +1,3 @@
-# HarvestPro
-“ Harvest Pro : A Smart Farming Web App Powered by Machine and Deep Learning ”
+# Crop_Recommendation
+# Fertilizer_Suggestion
+# Disease Detection
